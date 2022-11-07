@@ -1,0 +1,6 @@
+# pycache
+app/__pycache__/
+app/util/__pycache__/
+
+# output
+output/

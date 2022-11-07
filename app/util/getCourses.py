@@ -22,8 +22,7 @@ def getCourses(
         courses[row["CrsNo"]] = {
           "CrsNo": row["CrsNo"],
           "Requests": 0,
-          "Description": row["Description"],
-          "students": []
+          "Description": row["Description"]
         }
 
   if log:

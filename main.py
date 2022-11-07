@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.11
 import eel
+import os
 from app.generator import generateScheduleV3
 from app.util.globals import Error
 from app.util.getCourses import getCourses
@@ -9,15 +10,28 @@ eel.init('template')
 
 @eel.expose  
 def start(
-  input_file_dir: str,
+  raw_file_data: str,
   min_req: int,
   class_cap: int,
   block_class_limit: int,
   total_blocks: int,
 ) -> Error:
   
+  # Ensure output paths exists
+  if not os.path.exists('output'): os.makedirs('output')
+  if not os.path.exists('output/temp'): os.makedirs('output/temp')
+  if not os.path.exists('output/final'): os.makedirs('output/final')
+  if not os.path.exists('output/final/student_schedules'): os.makedirs('output/final/student_schedules')
+  if not os.path.exists('output/raw'): os.makedirs('output/raw')
+
+  raw_data_dir = './output/temp/course_selection_data.csv'
+
+  # save raw file data to local file
+  with open(raw_data_dir, 'w') as raw_file:
+    raw_file_data = raw_file_data.replace('\n', '')
+    raw_file.write(raw_file_data)
+
   # Ensure params are of correct type
-  input_file_dir    = str(input_file_dir)
   min_req           = int(min_req)
   class_cap         = int(class_cap)
   block_class_limit = int(block_class_limit)
@@ -26,11 +40,20 @@ def start(
   err = None
 
   # call pre-algorithm functions read raw data into a processable format
-  students = getStudents(input_file_dir, log=True, totalBlocks=total_blocks)
-  courses = getCourses(input_file_dir, log=True)
+  students = getStudents(
+    raw_data_dir,
+    log=True,
+    totalBlocks=total_blocks,
+    log_dir='./output/raw/students.json'
+  )
+  courses = getCourses(
+    raw_data_dir,
+    log=True,
+    log_dir='./output/raw/courses.json'
+  )
 
   # call algorithm to sort data
-  master_timetable, err = generateScheduleV3(
+  _, err = generateScheduleV3(
     students,
     courses,
     minReq=min_req,
@@ -40,6 +63,8 @@ def start(
     studentsDir='./output/raw/students.json',
     conflictsDir='./output/raw/conflicts.json'
   )
+
+  print(err)
 
   # TODO: log master_timetable
 
