@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script type="text/javascript" src="script.js"></script>
     <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="script.js"></script>
   </head>
   <body>
     <div class="background">
@@ -21,15 +21,18 @@
       <h3>Schedule Generator</h3>
       <label for="input_file">Input File (.csv)</label>
       <input
+        required
         aria-describedby="inputGroup-sizing-default"
         aria-label="Default"
         name="input_file"
         id="input_file"
         type="file"
+        accept=".csv"
       >
 
       <label for="classrooms">Number of classrooms (20-100)</label>
       <input
+        required
         aria-describedby="inputGroup-sizing-default"
         class="form-control"
         aria-label="Default"
@@ -43,6 +46,7 @@
 
       <label for="min_req">Minimum students per class</label>
       <input
+        required
         aria-describedby="inputGroup-sizing-default"
         class="form-control"
         aria-label="Default"
@@ -56,6 +60,7 @@
 
       <label for="class_cap">Maximum students per class</label>
       <input
+        required
         aria-describedby="inputGroup-sizing-default"
         class="form-control"
         aria-label="Default"
@@ -69,6 +74,7 @@
 
       <label for="total_blocks">Total blocks (10 or 8)</label>
       <input
+        required
         aria-describedby="inputGroup-sizing-default"
         class="form-control"
         aria-label="Default"
@@ -82,13 +88,14 @@
       >
       <!-- step="2" prevents a number like 9 -->
 
-      <button id="startBtn" onclick="start()">Generate</button>
+      <button id="startBtn" class="btn" onclick="start()">Generate</button>
     </div>
 
     <div id="processing" class="processing">
-      <div id="myProgress">
-        <div id="myBar"></div>
-      </div>
+      <h3 id="processing-header">Processing...</h3>
+      <div id="loader" class="loader"></div>
+      <ol id="progress"></ol>
+      <button id="retryBtn" class="btn" onclick="retry()">Again</button>
     </div>
   </body>
 </html>

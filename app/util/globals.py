@@ -17,3 +17,10 @@ class Error:
   def __init__(self, title: str, description: str):
     self.Title = title
     self.Description = description
+
+  # return dict version of self
+  def toDict(self) -> dict:
+    return {
+      "Title": self.Title,
+      "Description": self.Description 
+    }

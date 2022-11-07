@@ -6,7 +6,8 @@ import docx
 def putMasterTimetable(timetable: dict) -> None:
 	pass
 
-def putScheduleToWord(courses: dict, student: dict, output_dir: str='../../output/final/student_schedules') -> None:
+def putScheduleToWord(courses: dict, student: dict, output_dir: str='./output/final/student_schedules') -> None:
+
 	# create an instance of a word doc.
 	doc = docx.Document()
 

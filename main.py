@@ -1,13 +1,15 @@
 #!/usr/bin/env python3.11
 import eel
 import os
+import json
 from app.generator import generateScheduleV3
 from app.util.globals import Error
 from app.util.getCourses import getCourses
 from app.util.getStudents import getStudents
+from app.util.convertRawData import putScheduleToWord, putMasterTimetable
 
 eel.init('template')
-
+  
 @eel.expose  
 def start(
   raw_file_data: str,
@@ -15,8 +17,9 @@ def start(
   class_cap: int,
   block_class_limit: int,
   total_blocks: int,
-) -> Error:
-  
+) -> dict:
+
+  eel.post_data('Ensuring Directories Exists...')
   # Ensure output paths exists
   if not os.path.exists('output'): os.makedirs('output')
   if not os.path.exists('output/temp'): os.makedirs('output/temp')
@@ -26,9 +29,9 @@ def start(
 
   raw_data_dir = './output/temp/course_selection_data.csv'
 
+  eel.post_data('Saving raw data to local file...')
   # save raw file data to local file
   with open(raw_data_dir, 'w') as raw_file:
-    raw_file_data = raw_file_data.replace('\n', '')
     raw_file.write(raw_file_data)
 
   # Ensure params are of correct type
@@ -37,8 +40,7 @@ def start(
   block_class_limit = int(block_class_limit)
   total_blocks      = int(total_blocks)
 
-  err = None
-
+  eel.post_data('Collecting student information...')
   # call pre-algorithm functions read raw data into a processable format
   students = getStudents(
     raw_data_dir,
@@ -46,14 +48,16 @@ def start(
     totalBlocks=total_blocks,
     log_dir='./output/raw/students.json'
   )
+  eel.post_data('Collecting course information...')
   courses = getCourses(
     raw_data_dir,
     log=True,
     log_dir='./output/raw/courses.json'
   )
 
+  eel.post_data('Generating timetables...')
   # call algorithm to sort data
-  _, err = generateScheduleV3(
+  master_timetable, err = generateScheduleV3(
     students,
     courses,
     minReq=min_req,
@@ -64,12 +68,22 @@ def start(
     conflictsDir='./output/raw/conflicts.json'
   )
 
-  print(err)
+
+  if err is not None:
+    eel.post_data(f'An error has occured while generating the timetable: {err.Title}')
+    return err.toDict()
+
+  eel.post_data('Gathering latest data...')()
+  # Get updated students
+  with open('./output/raw/students.json', 'r') as studentFile: students = json.load(studentFile)
+
+  eel.post_data('Writing timetables to .docx files...')
+  # call post-algorithm functions to present sorted data
+  for student in students:
+    putScheduleToWord(courses, student, './output/final/student_schedules')
 
   # TODO: log master_timetable
 
-  # TODO: call post-algorithm functions to present sorted data
-
-  return err
+  return err.toDict() if err is not None else None
 
 eel.start('index.html', size=(800, 1000))
