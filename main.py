@@ -71,7 +71,7 @@ def start(
 
   if err is not None:
     eel.post_data(f'An error has occured while generating the timetable: {err.Title}')
-    return err.toDict()
+    return err.__dict__
 
   eel.post_data('Gathering latest data...')()
   # Get updated students
@@ -84,6 +84,6 @@ def start(
 
   # TODO: log master_timetable
 
-  return err.toDict() if err is not None else None
+  return err.__dict__ if err is not None else None
 
 eel.start('index.html', size=(800, 1000))
