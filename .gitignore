@@ -4,3 +4,6 @@ app/util/__pycache__/
 
 # output
 output/
+
+# test
+*test.py
