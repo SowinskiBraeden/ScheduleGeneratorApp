@@ -57,3 +57,15 @@ def getStudents(
       json.dump(students, outfile, indent=2)
 
   return students
+
+# Writes all students data to csv file
+def writeStudentsToCSV(students: dict, output_dir: str='./output/raw/csv/students.csv') -> None:
+  with open(output_dir, 'w') as file:
+    writer = csv.writer(file)
+    # Write header
+    data = ("Pupil #", "# of Classes", "Grade")
+    writer.writerow(data)
+
+    for student in students:
+      studentData = (student["Pupil #"], student["classes"], student["gradelevel"])
+      writer.writerow(studentData)

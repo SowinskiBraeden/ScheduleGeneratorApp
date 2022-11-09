@@ -41,7 +41,8 @@ def generateScheduleV3(
   blockClassLimit: int=40, # Block class limit is the number of classrooms available per block. Default 40 classes per block
   totalBlocks: int=10, # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
   studentsDir: str="../output/raw/students.json",
-  conflictsDir: str="../output/raw/conflicts.json"
+  conflictsDir: str="../output/raw/conflicts.json",
+  coursesDir: str="../output/raw/courses.json"
 ) -> tuple[dict, Error]: # Returns the completed 'running' dictionary from above
   
   # Return error that totalBlocks is invalid
@@ -531,10 +532,21 @@ def generateScheduleV3(
   for student in students:
     for block in student["schedule"]:
       if len(student["schedule"][block]) == 0:
-        student["schedule"][block].append(flex[0]) if int(block[5:]) <= 5 else student["schedule"][block].append(flex[1])
+        i = 0 if int(block[5:]) <= blockPerSem else 1
+        student["schedule"][block].append(flex[i])
 
-  # Update/log Student records
+  # Read timetable and collect data on courses
+  for block in running:
+    for course in running[block]:
+      sem = "Sem1" if int(block[5:]) <= blockPerSem else "Sem2"
+      courses[running[block][course]["CrsNo"]][sem] += 1 
+
+  # Update/log new student records
   with open(studentsDir, "w") as outfile:
     json.dump(students, outfile, indent=2)
   
+  # Update/log new course records
+  with open(coursesDir, "w") as outfile:
+    json.dump(courses, outfile, indent=2)
+
   return (running, None)

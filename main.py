@@ -4,8 +4,8 @@ import os
 import json
 from app.generator import generateScheduleV3
 from app.util.globals import Error
-from app.util.getCourses import getCourses
-from app.util.getStudents import getStudents
+from app.util.courses import getCourses, writeCoursesToCSV
+from app.util.students import getStudents, writeStudentsToCSV
 from app.util.convertRawData import putScheduleToWord, putMasterTimetable
 
 eel.init('template')
@@ -19,18 +19,22 @@ def start(
   total_blocks: int,
 ) -> dict:
 
-  eel.post_data('Ensuring Directories Exists...')
-  # Ensure output paths exists
-  if not os.path.exists('output'): os.makedirs('output')
-  if not os.path.exists('output/temp'): os.makedirs('output/temp')
-  if not os.path.exists('output/final'): os.makedirs('output/final')
-  if not os.path.exists('output/final/student_schedules'): os.makedirs('output/final/student_schedules')
-  if not os.path.exists('output/raw'): os.makedirs('output/raw')
-
   raw_data_dir = './output/temp/course_selection_data.csv'
+  raw_json_dir = './output/raw/json'
 
-  eel.post_data('Saving raw data to local file...')
+  # Ensure output paths exists
+  eel.post_data('Ensuring Directories Exists...')
+
+  if not os.path.exists('output'):                         os.makedirs('output')
+  if not os.path.exists('output/temp'):                    os.makedirs('output/temp')
+  if not os.path.exists('output/final'):                   os.makedirs('output/final')
+  if not os.path.exists('output/final/student_schedules'): os.makedirs('output/final/student_schedules')
+  if not os.path.exists('output/raw'):                     os.makedirs('output/raw')
+  if not os.path.exists('output/raw/json'):                os.makedirs('output/raw/json')
+  if not os.path.exists('output/raw/csv'):                 os.makedirs('output/raw/csv')
+
   # save raw file data to local file
+  eel.post_data('Saving raw data to local file...')
   with open(raw_data_dir, 'w') as raw_file:
     raw_file.write(raw_file_data)
 
@@ -40,19 +44,19 @@ def start(
   block_class_limit = int(block_class_limit)
   total_blocks      = int(total_blocks)
 
-  eel.post_data('Collecting student information...')
   # call pre-algorithm functions read raw data into a processable format
+  eel.post_data('Collecting student information...')
   students = getStudents(
     raw_data_dir,
     log=True,
     totalBlocks=total_blocks,
-    log_dir='./output/raw/students.json'
+    log_dir='./output/raw/json/students.json'
   )
   eel.post_data('Collecting course information...')
   courses = getCourses(
     raw_data_dir,
     log=True,
-    log_dir='./output/raw/courses.json'
+    log_dir=f'{raw_json_dir}/courses.json'
   )
 
   eel.post_data('Generating timetables...')
@@ -64,25 +68,30 @@ def start(
     classCap=class_cap,
     blockClassLimit=block_class_limit,
     totalBlocks=total_blocks,
-    studentsDir='./output/raw/students.json',
-    conflictsDir='./output/raw/conflicts.json'
+    studentsDir=f'{raw_json_dir}/students.json',
+    conflictsDir=f'{raw_json_dir}/conflicts.json',
+    coursesDir=f'{raw_json_dir}/courses.json'
   )
-
 
   if err is not None:
     eel.post_data(f'An error has occured while generating the timetable: {err.Title}')
     return err.__dict__
 
-  eel.post_data('Gathering latest data...')()
   # Get updated students
-  with open('./output/raw/students.json', 'r') as studentFile: students = json.load(studentFile)
+  eel.post_data('Gathering latest data...')
+  with open(f'{raw_json_dir}/students.json', 'r') as studentFile: students = json.load(studentFile)
+
+  # call post-algorithm functions to present sorted data
+  eel.post_data('Writing data to .csv files...')
+  # get updated raw data
+  with open(f'{raw_json_dir}/students.json', 'r') as sFile: students = json.load(sFile)
+  with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
+  writeStudentsToCSV(students, output_dir='./output/raw/csv/students.csv')
+  writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv')
 
   eel.post_data('Writing timetables to .docx files...')
-  # call post-algorithm functions to present sorted data
   for student in students:
     putScheduleToWord(courses, student, './output/final/student_schedules')
-
-  # TODO: log master_timetable
 
   return err.__dict__ if err is not None else None
 
