@@ -95,4 +95,8 @@ def start(
 
   return err.__dict__ if err is not None else None
 
-eel.start('index.html', size=(800, 1000))
+def main():
+  eel.start('index.html', size=(800, 1000))
+
+if __name__ == '__main__':
+  main()  
