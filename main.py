@@ -59,8 +59,8 @@ def start(
     log_dir=f'{raw_json_dir}/courses.json'
   )
 
-  eel.post_data('Generating timetables...')
   # call algorithm to sort data
+  eel.post_data('Generating timetables...')
   master_timetable, err = generateScheduleV3(
     students,
     courses,
