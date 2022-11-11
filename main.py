@@ -48,15 +48,15 @@ def start(
   eel.post_data('Collecting student information...')
   students = getStudents(
     raw_data_dir,
-    log=True,
-    totalBlocks=total_blocks,
-    log_dir='./output/raw/json/students.json'
+    log         = True,
+    totalBlocks = total_blocks,
+    log_dir     = './output/raw/json/students.json'
   )
   eel.post_data('Collecting course information...')
   courses = getCourses(
     raw_data_dir,
-    log=True,
-    log_dir=f'{raw_json_dir}/courses.json'
+    log     = True,
+    log_dir = f'{raw_json_dir}/courses.json'
   )
 
   # call algorithm to sort data
@@ -64,13 +64,13 @@ def start(
   master_timetable, err = generateScheduleV3(
     students,
     courses,
-    minReq=min_req,
-    classCap=class_cap,
-    blockClassLimit=block_class_limit,
-    totalBlocks=total_blocks,
-    studentsDir=f'{raw_json_dir}/students.json',
-    conflictsDir=f'{raw_json_dir}/conflicts.json',
-    coursesDir=f'{raw_json_dir}/courses.json'
+    minReq          = min_req,
+    classCap        = class_cap,
+    blockClassLimit = block_class_limit,
+    totalBlocks     = total_blocks,
+    studentsDir     = f'{raw_json_dir}/students.json',
+    conflictsDir    = f'{raw_json_dir}/conflicts.json',
+    coursesDir      = f'{raw_json_dir}/courses.json'
   )
 
   if err is not None:
