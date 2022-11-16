@@ -22,12 +22,15 @@ def getCourses(
       if not exists:
         grade = getGrade(row["CrsNo"], row["Description"])
         courses[row["CrsNo"]] = {
-          "CrsNo": row["CrsNo"],
-          "Requests": 0,
+          "CrsNo":       row["CrsNo"],
           "Description": row["Description"],
-          "Sem1": 0,
-          "Sem2":0,
-          "Grade": grade
+          "Grade":       grade,
+          "Requests":    0,
+          "Sem1":        0, # number of classes running in sem1
+          "Sem2":        0, # number of classes running in sem2
+          "Total":       0, # total number of classes running
+          "Seats":       0, # total number of seats
+          "Occupied":    0, # number of occupied seats
         }
 
   if log:
@@ -37,11 +40,21 @@ def getCourses(
   return courses
 
 # Writes all course data to csv file
-def writeCoursesToCSV(courses: dict, output_dir: str='./output/raw/csv/courses.csv') -> None:
+def writeCoursesToCSV(courses: dict, output_dir: str='./output/raw/csv/courses.csv', classCap: int=30) -> None:
   with open(output_dir, 'w') as file:
     writer = csv.writer(file)
     # Write header
-    data = ("CrsNo", "Description", "Grade", "Requests", "First sem. # of Classes", "Second sem. # of Classes", "Total # of Classes")
+    data = (
+      "CrsNo",
+      "Description",
+      "Grade",
+      "Requests",
+      "First sem. # of Classes",
+      "Second sem. # of Classes",
+      "Total # of Classes",
+      "Total # of Seats",
+      "# of Seats Occupied"
+    )
     writer.writerow(data)
 
     for course in courses:
@@ -52,6 +65,8 @@ def writeCoursesToCSV(courses: dict, output_dir: str='./output/raw/csv/courses.c
         courses[course]["Requests"],
         courses[course]["Sem1"],
         courses[course]["Sem2"],
-        (courses[course]["Sem1"] + courses[course]["Sem2"])
+        courses[course]["Total"],
+        courses[course]["Seats"],
+        courses[course]["Occupied"]
       )
       writer.writerow(courseData)

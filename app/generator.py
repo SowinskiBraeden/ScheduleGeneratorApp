@@ -540,7 +540,12 @@ def generateScheduleV3(
   for block in running:
     for course in running[block]:
       sem = "Sem1" if int(block[5:]) <= blockPerSem else "Sem2"
-      courses[running[block][course]["CrsNo"]][sem] += 1 
+      courses[running[block][course]["CrsNo"]][sem] += 1
+      courses[running[block][course]["CrsNo"]]["Occupied"] += len(running[block][course]["students"])
+
+  for course in courses:
+    courses[course]["Total"] = courses[course]["Sem1"] + courses[course]["Sem2"]
+    courses[course]["Seats"] = courses[course]["Total"] * classCap
 
   # Update/log new student records
   with open(studentsDir, "w") as outfile:
