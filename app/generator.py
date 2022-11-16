@@ -4,7 +4,7 @@ import random
 from string import hexdigits
 
 from app.util.globals import flex, Error
-from app.util.estimateGrade import getGradeFromCourseCode
+from app.util.estimateGrade import getGrade
 
 # Takes in information to create or add a new conflict
 # Returns if the particular student has a previous error
@@ -34,15 +34,15 @@ def insertConflictSolutions(pupilNum: str, logs: dict, data: dict) -> None:
 # Then it starts to attempt to fit all classes into a timetable, making corretions along
 # the way. Corrections being moving a students class
 def generateScheduleV3(
-  students: list, # Refer to /util/mockStudents.py to see the students list structure
-  courses: dict, # Reger to /util/generateCourses.py to see the courses dictionary structure
-  minReq: int=18, # minimum requests for a class to run
-  classCap: int=30, # maximum students per class
-  blockClassLimit: int=40, # Block class limit is the number of classrooms available per block. Default 40 classes per block
-  totalBlocks: int=10, # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
-  studentsDir: str="../output/raw/students.json",
-  conflictsDir: str="../output/raw/conflicts.json",
-  coursesDir: str="../output/raw/courses.json"
+  students:        list, # Refer to /util/students.py to see the students list structure
+  courses:         dict, # Refer to /util/courses.py to see the courses dictionary structure
+  minReq:          int = 18, # minimum requests for a class to run
+  classCap:        int = 30, # maximum students per class
+  blockClassLimit: int = 40, # Block class limit is the number of classrooms available per block. Default 40 classes per block
+  totalBlocks:     int = 10, # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
+  studentsDir:     str = "../output/raw/students.json",
+  conflictsDir:    str = "../output/raw/conflicts.json",
+  coursesDir:      str = "../output/raw/courses.json"
 ) -> tuple[dict, Error]: # Returns the completed 'running' dictionary from above
   
   # Return error that totalBlocks is invalid
@@ -469,7 +469,8 @@ def generateScheduleV3(
           for obj in missing:
             blockSolution = { "CrsNo": obj["CrsNo"], "block": obj['block'], "solutions": [] }
             for cname in running[obj['block']]:
-              courseGrade = getGradeFromCourseCode(cname[:-2])
+              courseInfo = running[obj['block']][cname]
+              courseGrade = getGrade(courseInfo['CrsNo'], courseInfo['Description'])
               if courseGrade is None: continue
               if (student["gradelevel"] == courseGrade) or (student["gradelevel"] == 12 and courseGrade == 11):
                 if len(running[obj['block']][cname]["students"]) < classCap:

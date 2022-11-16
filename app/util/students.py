@@ -1,15 +1,15 @@
 #!/usr/bin/env python3.11
 import json
 import csv
-from app.util.estimateGrade import getEstimatedGrade
+from app.util.estimateGrade import estimateStudentGrade
 from app.util.globals import flex
 
 # sort data into usable dictionary
 def getStudents(
-  data_dir: str,
-  log: bool=False,
-  totalBlocks: int=10,
-  log_dir: str='./output/raw/students.json'
+  data_dir:    str,
+  log:         bool = False,
+  totalBlocks: int  = 10,
+  log_dir:     str  = './output/raw/students.json'
 ) -> list[ dict[ str: any ] ]:
   
   students: list[ dict[ str: any ] ] = []
@@ -50,7 +50,7 @@ def getStudents(
 
   # Estimate student grades
   for student in students:
-    student["gradelevel"] = getEstimatedGrade(student)
+    student["gradelevel"] = estimateStudentGrade(student)
 
   if log:
     with open(log_dir, "w") as outfile:

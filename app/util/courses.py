@@ -1,13 +1,13 @@
 #!/usr/bin/env python3.11
 import json
 import csv
-from app.util.estimateGrade import getGradeFromCourseCode
+from app.util.estimateGrade import getGrade
 
 # Get all requested courses from data
 def getCourses(
   data_dir: str,
-  log: int=False,
-  log_dir: str='./output/raw/courses.json',
+  log:      int = False,
+  log_dir:  str = './output/raw/courses.json',
 ) -> dict[dict[str: any]]:
 
   courses = {}
@@ -20,13 +20,14 @@ def getCourses(
         exists = True if courses[course]["CrsNo"] == row["CrsNo"] else False
         if exists: break
       if not exists:
+        grade = getGrade(row["CrsNo"], row["Description"])
         courses[row["CrsNo"]] = {
           "CrsNo": row["CrsNo"],
           "Requests": 0,
           "Description": row["Description"],
           "Sem1": 0,
           "Sem2":0,
-          "Grade": getGradeFromCourseCode(row["CrsNo"])
+          "Grade": grade
         }
 
   if log:
