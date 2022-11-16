@@ -12,12 +12,13 @@ eel.init('template')
   
 @eel.expose  
 def start(
-  raw_file_data: str,
-  min_req: int,
-  class_cap: int,
-  block_class_limit: int,
-  total_blocks: int,
-) -> dict:
+  raw_file_data:          str,
+  min_req:                int,
+  class_cap:              int,
+  block_class_limit:      int,
+  total_blocks:           int,
+  save_student_schedules: bool
+) -> Error.__dict__: # Return Error dataclass as dict
 
   raw_data_dir = './output/temp/course_selection_data.csv'
   raw_json_dir = './output/raw/json'
@@ -28,11 +29,13 @@ def start(
   if not os.path.exists('output'):                         os.makedirs('output')
   if not os.path.exists('output/temp'):                    os.makedirs('output/temp')
   if not os.path.exists('output/final'):                   os.makedirs('output/final')
-  if not os.path.exists('output/final/student_schedules'): os.makedirs('output/final/student_schedules')
   if not os.path.exists('output/raw'):                     os.makedirs('output/raw')
   if not os.path.exists('output/raw/json'):                os.makedirs('output/raw/json')
   if not os.path.exists('output/raw/csv'):                 os.makedirs('output/raw/csv')
 
+  # Only ensure folder exists if we want to save student schedules to docx files
+  if save_student_schedules and not os.path.exists('output/final/student_schedules'): os.makedirs('output/final/student_schedules')
+  
   # save raw file data to local file
   eel.post_data('Saving raw data to local file...')
   with open(raw_data_dir, 'w') as raw_file:
@@ -90,8 +93,9 @@ def start(
   writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv')
 
   eel.post_data('Writing timetables to .docx files...')
-  for student in students:
-    putScheduleToWord(courses, student, './output/final/student_schedules')
+  if save_student_schedules:
+    for student in students:
+      putScheduleToWord(courses, student, './output/final/student_schedules')
 
   return err.__dict__ if err is not None else None
 

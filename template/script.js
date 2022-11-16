@@ -6,6 +6,7 @@ function start() {
   let classCap = document.getElementById("class_cap").value;
   let blockClassLimit = document.getElementById("classrooms").value;
   let totalBlocks = document.getElementById("total_blocks").value;
+  let saveStudentSchedules = document.getElementById("save_student_schedules").checked;
 
   // ensure data is passed before continuing
   if (!e(file) || !e(minReq) || !e(classCap) || !e(blockClassLimit) || !e(totalBlocks)) return alert('Please ensure all fields aren\'t empty.');
@@ -17,7 +18,14 @@ function start() {
   let reader = new FileReader()
   reader.addEventListener("load", () => {
     let raw = reader.result;
-    eel.start(raw, minReq, classCap, blockClassLimit, totalBlocks)(finish_callback);
+    eel.start(
+      raw, 
+      minReq, 
+      classCap, 
+      blockClassLimit, 
+      totalBlocks,
+      saveStudentSchedules
+    )(finish_callback);
   }, false);
 
   if (file) {
