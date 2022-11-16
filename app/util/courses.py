@@ -40,7 +40,7 @@ def getCourses(
   return courses
 
 # Writes all course data to csv file
-def writeCoursesToCSV(courses: dict, output_dir: str='./output/raw/csv/courses.csv', classCap: int=30) -> None:
+def writeCoursesToCSV(courses: dict, output_dir: str='./output/raw/csv/courses.csv') -> None:
   with open(output_dir, 'w') as file:
     writer = csv.writer(file)
     # Write header

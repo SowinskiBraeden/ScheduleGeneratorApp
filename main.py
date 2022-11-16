@@ -90,7 +90,7 @@ def start(
   with open(f'{raw_json_dir}/students.json', 'r') as sFile: students = json.load(sFile)
   with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
   writeStudentsToCSV(students, output_dir='./output/raw/csv/students.csv')
-  writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv', classCap=class_cap)
+  writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv')
 
   eel.post_data('Writing timetables to .docx files...')
   if save_student_schedules:
