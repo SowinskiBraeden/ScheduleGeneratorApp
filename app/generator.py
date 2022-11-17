@@ -555,4 +555,8 @@ def generateScheduleV3(
   with open(coursesDir, "w") as outfile:
     json.dump(courses, outfile, indent=2)
 
+  # Save timetable to json
+  with open('./output/raw/json/timetable.json', 'w') as outfile:
+    json.dump(running, outfile, indent=2)
+
   return (running, None)
