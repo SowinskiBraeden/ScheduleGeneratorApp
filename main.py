@@ -9,6 +9,7 @@ from app.util.globals import Error
 from app.util.courses import getCourses, writeCoursesToCSV
 from app.util.students import getStudents, writeStudentsToCSV
 from app.util.errorCalculator import writeErrorsToCSV
+from app.util.validator import validateInputData
 
 eel.init('template')
   
@@ -48,6 +49,10 @@ def start(
   class_cap         = int(class_cap)
   block_class_limit = int(block_class_limit)
   total_blocks      = int(total_blocks)
+
+  eel.post_data('Validating input file...')
+  validateErr = validateInputData(raw_data_dir)
+  if validateErr is not None: return validateErr.__dict__
 
   # call pre-algorithm functions read raw data into a processable format
   eel.post_data('Collecting student information...')
