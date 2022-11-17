@@ -8,6 +8,7 @@ from app.generator import generateScheduleV3
 from app.util.globals import Error
 from app.util.courses import getCourses, writeCoursesToCSV
 from app.util.students import getStudents, writeStudentsToCSV
+from app.util.errorCalculator import writeErrorsToCSV
 
 eel.init('template')
   
@@ -92,6 +93,7 @@ def start(
   with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
   writeStudentsToCSV(students, output_dir='./output/raw/csv/students.csv')
   writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv')
+  writeErrorsToCSV(len(students), conflictsDir='./output/raw/json/conflicts.json', outputDir='./output/raw/csv/error_tracker.csv')
 
   eel.post_data('Writing master timetable to .xlsx file...')
   putMasterTimetable(master_timetable, './output/final')
