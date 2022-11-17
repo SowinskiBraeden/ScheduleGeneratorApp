@@ -37,14 +37,22 @@ eel.expose(post_data);
 function post_data(msg) {
   let newMessage = document.createElement('li');
   newMessage.innerText = msg;
-  newMessage.className = 'nostyle'
+  newMessage.className = 'nostyle';
+  document.getElementById('progress').appendChild(newMessage)
+}
+
+function post_error(msg) {
+  let newMessage = document.createElement('li');
+  newMessage.innerText = msg;
+  newMessage.className = 'nostyle';
+  newMessage.style = 'color: red;';
   document.getElementById('progress').appendChild(newMessage)
 }
 
 function finish_callback(error) {
   if (error) {
-    post_data(`Error: ${error.Title}`);
-    post_data(error.Description);
+    post_error(`Error: ${error.Title}`, true);
+    post_error(error.Description, true);
   } else {
     document.getElementById('processing-header').innerText = 'Finished Processing!';
     let data = document.getElementById('progress');
@@ -59,10 +67,10 @@ function finish_callback(error) {
 }
 
 function retry() {
-  // start animation
   document.getElementById('processing').style.display = 'none';
   document.getElementById('main').style.display = 'block';
   document.getElementById('loader').style.display = 'block';
+  document.getElementById('retryBtn').style.display = 'none';
   let data = document.getElementById('progress');
   while (data.firstChild) {
     data.removeChild(data.firstChild);
