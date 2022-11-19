@@ -48,7 +48,7 @@ def generateScheduleV3(
   # Return error that totalBlocks is invalid
   if totalBlocks not in (10, 8):
     totalBlockError = Error('Invalid totalBlocks', 'An invalid \'totalBlocks\' value was provided -> must be 10 or 8')
-    return (None, totalBlockError) # return none an signal failure
+    return (None, totalBlockError) # return none and signal failure
 
   # First we need to setup some values
   median = (minReq + classCap) // 2
