@@ -12,7 +12,7 @@ from app.util.errorCalculator import writeErrorsToCSV
 from app.util.validator import validateInputData
 
 eel.init('template')
-  
+
 @eel.expose  
 def start(
   raw_file_data:          str,

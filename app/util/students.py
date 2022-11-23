@@ -45,12 +45,13 @@ def getStudents(
           "remainingAlts": [],
           "studentIndex": len(students)
         }
+        newStudent["gradelevel"] = row.get("Grade") if row.get("Grade") is not None else row.get("grade")
         for i in range(1, totalBlocks+1): newStudent["schedule"][f'block{i}'] = []
         students.append(newStudent)
 
   # Estimate student grades
   for student in students:
-    student["gradelevel"] = estimateStudentGrade(student)
+    if student["gradelevel"] is None: student["gradelevel"] = estimateStudentGrade(student)
 
   if log:
     with open(log_dir, "w") as outfile:
