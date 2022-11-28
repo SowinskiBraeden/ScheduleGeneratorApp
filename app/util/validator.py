@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.11
 from app.util.globals import Error
 
+# validate user's inputed csv file contains required fields
 def validateInputData(inputFileDir: str) -> Error:
   with open(inputFileDir, newline='') as csvfile:
     includes = ['Pupil #', 'CrsNo', 'Description', 'Alternate?']
