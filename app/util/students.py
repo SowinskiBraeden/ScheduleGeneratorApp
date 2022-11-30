@@ -60,7 +60,10 @@ def getStudents(
   return students
 
 # Writes all students data to csv file
-def writeStudentsToCSV(students: dict, output_dir: str='./output/raw/csv/students.csv') -> None:
+def writeStudentsToCSV(
+  students:   dict, 
+  output_dir: str = './output/raw/csv/students.csv'
+) -> None:
   with open(output_dir, 'w') as file:
     writer = csv.writer(file)
     # Write header

@@ -8,7 +8,14 @@ from app.util.estimateGrade import getGrade
 
 # Takes in information to create or add a new conflict
 # Returns if the particular student has a previous error
-def newConflict(pupilNum: str, email: str, conflictType: str, code: str, description: str, logs: dict) -> bool:
+def newConflict(
+  pupilNum:     str, 
+  email:        str, 
+  conflictType: str, 
+  code:         str, 
+  description:  str,
+  logs:         dict
+) -> bool:
   exists = True if pupilNum in logs else False
   log = {
     "Pupil #": pupilNum,
@@ -17,18 +24,20 @@ def newConflict(pupilNum: str, email: str, conflictType: str, code: str, descrip
     "Code": code,
     "Conflict": description
   }
-  if exists: logs[pupilNum].append(log)
-  else: logs[pupilNum] = [log]
+  logs[pupilNum] = [log] if not exists else logs[pupilNum].append(log)
   return exists if conflictType == "Critical" else False
 
-def insertConflictSolutions(pupilNum: str, logs: dict, data: dict) -> None:
-  log = logs[pupilNum]
-  for conflict in log:
+def insertConflictSolutions(
+  pupilNum: str, 
+  logs:     dict, 
+  data:     dict
+) -> None:
+  for conflict in logs[pupilNum]:
     if conflict["Type"] == "Critical":
       conflict["Missing"] = data
       break
 
-# V3 differs a lot by V1/2 as it does not focus on fitting the classes
+# V3 diffelogrs a lot by V1/2 as it does not focus on fitting the classes
 # into the time table first.
 # It starts by trying to get all classes full and give all students a full class list.
 # Then it starts to attempt to fit all classes into a timetable, making corretions along

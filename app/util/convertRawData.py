@@ -4,7 +4,10 @@ from app.util.globals import flex
 import xlsxwriter
 import docx
 
-def putMasterTimetable(table: dict, output_dir: str='./output/final') -> None:
+def putMasterTimetable(
+	table:		  dict, 
+	output_dir: str = './output/final'
+) -> None:
 
 	workbook = xlsxwriter.Workbook(f'{output_dir}/master_timetable.xlsx')
 	worksheet = workbook.add_worksheet()
@@ -32,7 +35,11 @@ def putMasterTimetable(table: dict, output_dir: str='./output/final') -> None:
 
 	workbook.close()
 
-def putScheduleToWord(courses: dict, student: dict, output_dir: str='./output/final/student_schedules') -> None:
+def putScheduleToWord(
+	courses: 		dict, 
+	student: 		dict, 
+	output_dir: str = './output/final/student_schedules'
+) -> None:
 
 	# create an instance of a word doc.
 	doc = docx.Document()
