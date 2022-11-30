@@ -34,11 +34,10 @@ function start() {
 }
 
 eel.expose(post_data);
-function post_data(msg, warn=false) {
+function post_data(msg) {
   let newMessage = document.createElement('li');
   newMessage.innerText = msg;
   newMessage.className = 'nostyle';
-  if (warn) newMessage.style = 'color:yellow;';
   document.getElementById('progress').appendChild(newMessage)
 }
 
