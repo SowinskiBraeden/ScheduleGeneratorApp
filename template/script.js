@@ -34,10 +34,11 @@ function start() {
 }
 
 eel.expose(post_data);
-function post_data(msg) {
+function post_data(msg, warn=false) {
   let newMessage = document.createElement('li');
   newMessage.innerText = msg;
   newMessage.className = 'nostyle';
+  if (warn) newMessage.style = 'color:yellow;';
   document.getElementById('progress').appendChild(newMessage)
 }
 
@@ -59,7 +60,7 @@ function finish_callback(error) {
     while (data.firstChild) {
       data.removeChild(data.firstChild);
     }
-    post_data('Individual student schedules can be found in the \'/output/final/student_schedules/\' folder and the master timetable as well as student with conflicts can be found in the \'/output/final/\' folder.')
+    post_data('Success! The master timetable as well as student with conflicts can be found in the \'/output/final/\' folder.')
   }
   
   document.getElementById('loader').style.display = 'none';

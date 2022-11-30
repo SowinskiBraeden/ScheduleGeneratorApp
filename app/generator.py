@@ -24,7 +24,8 @@ def newConflict(
     "Code": code,
     "Conflict": description
   }
-  logs[pupilNum] = [log] if not exists else logs[pupilNum].append(log)
+  if exists: logs[pupilNum].append(log)
+  else: logs[pupilNum] = [log]
   return exists if conflictType == "Critical" else False
 
 def insertConflictSolutions(
@@ -37,7 +38,7 @@ def insertConflictSolutions(
       conflict["Missing"] = data
       break
 
-# V3 diffelogrs a lot by V1/2 as it does not focus on fitting the classes
+# V3 differs a lot by V1/2 as it does not focus on fitting the classes
 # into the time table first.
 # It starts by trying to get all classes full and give all students a full class list.
 # Then it starts to attempt to fit all classes into a timetable, making corretions along
