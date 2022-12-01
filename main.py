@@ -6,7 +6,7 @@ import json
 from app.util.convertRawData import putScheduleToWord, putMasterTimetable
 from app.generator import generateScheduleV3
 from app.util.globals import Error
-from app.util.courses import getCourses, writeCoursesToCSV
+from app.util.courses import getCourses, writeCoursesToCSV, Course
 from app.util.students import getStudents, writeStudentsToCSV, Student
 from app.util.errorCalculator import writeErrorsToCSV
 from app.util.validator import validateInputData
@@ -41,8 +41,7 @@ def start(
   
   # save raw file data to local file
   eel.post_data('Saving raw data to local file...')
-  with open(raw_data_dir, 'w') as raw_file:
-    raw_file.write(raw_file_data)
+  with open(raw_data_dir, 'w') as raw_file: raw_file.write(raw_file_data)
 
   # Ensure params are of correct type
   min_req           = int(min_req)
@@ -56,14 +55,14 @@ def start(
 
   # call pre-algorithm functions read raw data into a processable format
   eel.post_data('Collecting student information...')
-  students = getStudents(
+  students: list[Student] = getStudents(
     raw_data_dir,
     log         = False,
     totalBlocks = total_blocks,
     log_dir     = './output/raw/json/students.json'
   )
   eel.post_data('Collecting course information...')
-  courses = getCourses(
+  courses: dict[str: Course] = getCourses(
     raw_data_dir,
     log     = True,
     log_dir = f'{raw_json_dir}/courses.json'
@@ -91,8 +90,10 @@ def start(
   eel.post_data('Gathering latest data...')
   with open(f'{raw_json_dir}/students.json', 'r') as studentFile:
     # Unpack dictionary to Student dataclass
-    students = [Student(**s) for s in json.load(studentFile)]
-  with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
+    students: list[Student] = [Student(**s) for s in json.load(studentFile)]
+  with open(f'{raw_json_dir}/courses.json', 'r') as cFile:
+    # Unpack dictionary to Course dataclass
+    courses: dict[str: Course] = {c["CrsNo"]: Course(**c) for c in json.load(cFile)}
 
   # call post-algorithm functions to present sorted data
   eel.post_data('Writing data to .csv files...')

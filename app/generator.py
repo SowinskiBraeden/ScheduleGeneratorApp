@@ -6,6 +6,7 @@ from string import hexdigits
 from app.util.globals import flex, Error
 from app.util.estimateGrade import getGrade
 from app.util.students import Student, studentsToDict
+from app.util.courses import Course, coursesToDict
 
 # Takes in information to create or add a new conflict
 # Returns if the particular student has a previous error
@@ -45,17 +46,17 @@ def insertConflictSolutions(
 # Then it starts to attempt to fit all classes into a timetable, making corretions along
 # the way. Corrections being moving a students class
 def generateScheduleV3(
-  students:        list[Student], # Refer to /util/students.py to see the students list structure
-  courses:         dict,          # Refer to /util/courses.py to see the courses dictionary structure
-  minReq:          int = 18,      # minimum requests for a class to run
-  classCap:        int = 30,      # maximum students per class
-  blockClassLimit: int = 40,      # Block class limit is the number of classrooms available per block. Default 40 classes per block
-  totalBlocks:     int = 10,      # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
+  students:        list[Student],     # Refer to /util/students.py to see the students list structure
+  courses:         dict[str: Course], # Refer to /util/courses.py to see the courses dictionary structure
+  minReq:          int = 18,          # minimum requests for a class to run
+  classCap:        int = 30,          # maximum students per class
+  blockClassLimit: int = 40,          # Block class limit is the number of classrooms available per block. Default 40 classes per block
+  totalBlocks:     int = 10,          # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
   studentsDir:     str = "../output/raw/students.json",
   conflictsDir:    str = "../output/raw/conflicts.json",
   coursesDir:      str = "../output/raw/courses.json"
-) -> tuple[dict, Error]: # Returns the completed 'running' dictionary from above
-  
+) -> tuple[dict, Error]: # Returns the completed 'running' dictionary
+
   # Return error that totalBlocks is invalid
   if totalBlocks not in (10, 8):
     totalBlockError = Error('Invalid totalBlocks', 'An invalid \'totalBlocks\' value was provided -> must be 10 or 8')
@@ -80,9 +81,9 @@ def generateScheduleV3(
     # Tally class request
     for request in (request for request in student.Requests if not request.Alt and request.CrsNo not in flex):
       code = request.CrsNo
-      courses[code]["Requests"] += 1
+      courses[code].Requests += 1
       # Add course to active list if enough requests
-      if courses[code]["Requests"] > minReq and courses[code]["CrsNo"] not in activeCourses:
+      if courses[code].Requests > minReq and courses[code].CrsNo not in activeCourses:
         activeCourses[code] = courses[code]
 
 
@@ -94,14 +95,14 @@ def generateScheduleV3(
   for i in range(len(activeCourses)):
     index = list(activeCourses)[i]
     if index not in emptyClasses: emptyClasses[index] = {}
-    classRunCount = activeCourses[index]["Requests"] // median
-    remaining = activeCourses[index]["Requests"] % median
+    classRunCount = activeCourses[index].Requests // median
+    remaining = activeCourses[index].Requests % median
 
     # Put number of classRunCount classes in emptyClasses
     for j in range(classRunCount):
       emptyClasses[index][f"{index}-{hexdigits[j]}"] = {
         "CrsNo": index,
-        "Description": activeCourses[index]["Description"],
+        "Description": activeCourses[index].Description,
         "expectedLen": median # Number of students expected in this class / may be altered later
       }
 
@@ -118,7 +119,7 @@ def generateScheduleV3(
       # Create a class using remaining
       emptyClasses[index][f"{index}-{hexdigits[classRunCount]}"] = {
         "CrsNo": index,
-        "Description": activeCourses[index]["Description"],
+        "Description": activeCourses[index].Description,
         "expectedLen": remaining
       }
 
@@ -145,7 +146,7 @@ def generateScheduleV3(
       # Create a class using remaining + required amount from existing classes
       emptyClasses[index][f"{index}-{hexdigits[classRunCount]}"] = {
         "CrsNo": index,
-        "Description": activeCourses[index]["Description"],
+        "Description": activeCourses[index].Description,
         "expectedLen": remaining
       }
       
@@ -225,7 +226,7 @@ def generateScheduleV3(
                   "index": student.StudentIndex
                 }],
                 "CrsNo": course,
-                "Description": courses[course]["Description"]
+                "Description": courses[course].Description
               }
               getAvailableCourse = False
               break
@@ -550,13 +551,14 @@ def generateScheduleV3(
   # Read timetable and collect data on courses
   for block in running:
     for course in running[block]:
-      sem = "Sem1" if int(block[5:]) <= blockPerSem else "Sem2"
-      courses[running[block][course]["CrsNo"]][sem] += 1
-      courses[running[block][course]["CrsNo"]]["Occupied"] += len(running[block][course]["students"])
+      c = running[block][course]["CrsNo"]
+      if int(block[5:]) <= blockPerSem: courses[c].Sem1 += 1
+      else: courses[c].Sem2 += 1
+      courses[c].Occupied += len(running[block][course]["students"])
 
   for course in courses:
-    courses[course]["Total"] = courses[course]["Sem1"] + courses[course]["Sem2"]
-    courses[course]["Seats"] = courses[course]["Total"] * classCap
+    courses[course].Total = courses[course].Sem1 + courses[course].Sem2
+    courses[course].Seats = courses[course].Total * classCap
 
   # Update/log new student records
   with open(studentsDir, "w") as outfile:
@@ -564,7 +566,7 @@ def generateScheduleV3(
   
   # Update/log new course records
   with open(coursesDir, "w") as outfile:
-    json.dump(courses, outfile, indent=2)
+    json.dump(coursesToDict(courses), outfile, indent=2)
 
   # Save timetable to json
   with open('./output/raw/json/timetable.json', 'w') as outfile:

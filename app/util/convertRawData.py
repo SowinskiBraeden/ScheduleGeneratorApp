@@ -4,8 +4,11 @@ from app.util.globals import flex
 import xlsxwriter
 import docx
 
+from app.util.courses import Course
+from app.util.students import Student
+
 def putMasterTimetable(
-	table:		  dict, 
+	table:		  dict[str: dict], 
 	output_dir: str = './output/final'
 ) -> None:
 
@@ -36,8 +39,8 @@ def putMasterTimetable(
 	workbook.close()
 
 def putScheduleToWord(
-	courses: 		dict, 
-	student: 		dict, 
+	courses: 		dict[str: Course], 
+	student: 		Student, 
 	output_dir: str = './output/final/student_schedules'
 ) -> None:
 
@@ -64,7 +67,7 @@ def putScheduleToWord(
 	for block in student['schedule']:
 		courseCode = student.Schedule[block][0]
 		if courseCode in flex: courseName = 'Study'
-		else: courseName = courses[courseCode[:-2]]["Description"]
+		else: courseName = courses[courseCode[:-2]].Description
 		blockNum = int(block.split('block')[1])
 		semester = 2 if blockNum > 5 else 1
 		if blockNum > (len(student.Schedule)/2): blockNum -= (len(student.Schedule)/2)
