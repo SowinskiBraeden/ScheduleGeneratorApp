@@ -5,6 +5,7 @@ from string import hexdigits
 
 from app.util.globals import flex, Error
 from app.util.estimateGrade import getGrade
+from app.util.students import Student, studentsToDict
 
 # Takes in information to create or add a new conflict
 # Returns if the particular student has a previous error
@@ -44,12 +45,12 @@ def insertConflictSolutions(
 # Then it starts to attempt to fit all classes into a timetable, making corretions along
 # the way. Corrections being moving a students class
 def generateScheduleV3(
-  students:        list, # Refer to /util/students.py to see the students list structure
-  courses:         dict, # Refer to /util/courses.py to see the courses dictionary structure
-  minReq:          int = 18, # minimum requests for a class to run
-  classCap:        int = 30, # maximum students per class
-  blockClassLimit: int = 40, # Block class limit is the number of classrooms available per block. Default 40 classes per block
-  totalBlocks:     int = 10, # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
+  students:        list[Student], # Refer to /util/students.py to see the students list structure
+  courses:         dict,          # Refer to /util/courses.py to see the courses dictionary structure
+  minReq:          int = 18,      # minimum requests for a class to run
+  classCap:        int = 30,      # maximum students per class
+  blockClassLimit: int = 40,      # Block class limit is the number of classrooms available per block. Default 40 classes per block
+  totalBlocks:     int = 10,      # total blocks between two semesters -> default is 10 for 5 per semester... or this can be 8 for 4 blocks per semester
   studentsDir:     str = "../output/raw/students.json",
   conflictsDir:    str = "../output/raw/conflicts.json",
   coursesDir:      str = "../output/raw/courses.json"
@@ -77,8 +78,8 @@ def generateScheduleV3(
   activeCourses = {}
   for student in students:
     # Tally class request
-    for request in (request for request in student["requests"] if not request["alt"] and request["CrsNo"] not in flex):
-      code = request["CrsNo"]
+    for request in (request for request in student.Requests if not request.Alt and request.CrsNo not in flex):
+      code = request.CrsNo
       courses[code]["Requests"] += 1
       # Add course to active list if enough requests
       if courses[code]["Requests"] > minReq and courses[code]["CrsNo"] not in activeCourses:
@@ -183,9 +184,9 @@ def generateScheduleV3(
     # bias to students at the top of the list
     student = tempStudents[random.randint(0, len(tempStudents)-1)]
 
-    alternates = [request for request in student["requests"] if request["alt"]]
-    for request in (request for request in student["requests"] if not request["alt"] and request["CrsNo"] not in flex):
-      course = request["CrsNo"]
+    alternates = [request for request in student.Requests if request.Alt]
+    for request in (request for request in student.Requests if not request.Alt and request.CrsNo not in flex):
+      course = request.CrsNo
       getAvailableCourse = True
       isAlt = False
       while getAvailableCourse:
@@ -198,8 +199,8 @@ def generateScheduleV3(
               if len(selectedCourses[cname]["students"]) < emptyClasses[course][cname]["expectedLen"]:
                 # Class exists with room for student
                 selectedCourses[cname]["students"].append({
-                  "Pupil #": student["Pupil #"],
-                  "index": student["studentIndex"]
+                  "Pupil #": student.PupilNum,
+                  "index": student.StudentIndex
                 })
                 getAvailableCourse = False
                 break
@@ -208,7 +209,7 @@ def generateScheduleV3(
                 if cname[len(cname)-1] == f"{len(emptyClasses[course])-1}":
                   if len(alternates) > 0:
                     # Use alternate
-                    course = alternates[0]["CrsNo"]
+                    course = alternates[0].CrsNo
                     alternates.remove(alternates[0])
                     isAlt = True
                     break
@@ -220,8 +221,8 @@ def generateScheduleV3(
             elif cname not in selectedCourses:
               selectedCourses[cname] = {
                 "students": [{
-                  "Pupil #": student["Pupil #"],
-                  "index": student["studentIndex"]
+                  "Pupil #": student.PupilNum,
+                  "index": student.StudentIndex
                 }],
                 "CrsNo": course,
                 "Description": courses[course]["Description"]
@@ -232,7 +233,7 @@ def generateScheduleV3(
         elif course not in emptyClasses:
           if len(alternates) > 0:
             # Use alternate
-            course = alternates[0]["CrsNo"]
+            course = alternates[0].CrsNo
             alternates.remove(alternates[0])
             isAlt = True
           else:
@@ -240,7 +241,7 @@ def generateScheduleV3(
             # handle options to solve for missing class
             getAvailableCourse = False
 
-    students[student["studentIndex"]]["remainingAlts"] = alternates
+    students[student.StudentIndex].RemainingAlts = alternates
     tempStudents.remove(student)
 
 
@@ -323,8 +324,8 @@ def generateScheduleV3(
   for block in running:
     for cname in running[block]:
       for student in running[block][cname]["students"]:
-        students[student["index"]]["schedule"][block].append(cname)
-        students[student["index"]]["classes"] += 1
+        students[student["index"]].Schedule[block].append(cname)
+        students[student["index"]].Classes += 1
 
 
   # Step 6 - Evaluate, move students to fix conflicts
@@ -334,7 +335,7 @@ def generateScheduleV3(
   studentsCritical, studentsAcceptable = 0, 0
 
   for student in students:
-    blocks = [student["schedule"][block] for block in student["schedule"]]
+    blocks = [student.Schedule[block] for block in student.Schedule]
     hasConflicts = True if sum(1 for b in blocks if len(b)>1) > 0 else False
     
     # If there is no conflicts
@@ -342,26 +343,26 @@ def generateScheduleV3(
     # or classes the student is inserted to is missing
     # no more than two classes:
     # continue to next student
-    if not hasConflicts and student["classes"] == student["expectedClasses"]: continue
-    elif not hasConflicts and (student["expectedClasses"]-2) <= student["classes"] < student["expectedClasses"]:
+    if not hasConflicts and student.Classes == student.ExpectedClasses: continue
+    elif not hasConflicts and (student.ExpectedClasses-2) <= student.Classes < student.ExpectedClasses:
       # TODO: Insert alternates if available?
       a_mc_count += 1
       acceptableCount += 1
-      if not newConflict(student["Pupil #"], "", "Acceptable", "A-MC", "Missing 1-2 Classses", conflictLogs): studentsAcceptable += 1
+      if not newConflict(student.PupilNum, "", "Acceptable", "A-MC", "Missing 1-2 Classses", conflictLogs): studentsAcceptable += 1
       continue
     
     studentData = {
-      "Pupil #": student["Pupil #"],
-      "index": student["studentIndex"]
+      "Pupil #": student.PupilNum,
+      "index": student.StudentIndex
     }
 
     if hasConflicts:
-      student["classes"] = 0
+      student.Classes = 0
       missing = []
       # Clear student schedule to restructure
-      for block in student["schedule"]:
-        [running[block][cname]["students"].remove(studentData) for cname in student["schedule"][block]]
-        student["schedule"][block] = []
+      for block in student.Schedule:
+        [running[block][cname]["students"].remove(studentData) for cname in student.Schedule[block]]
+        student.Schedule[block] = []
 
       # Find class in student schedule that's run the least
       classes, runCounts = [], []
@@ -382,9 +383,9 @@ def generateScheduleV3(
           for cname in running[block]:
             if cname[:-2] == classes[index] and len(running[block][cname]["students"]) < classCap:
               running[block][cname]["students"].append(studentData)
-              student["schedule"][block].append(cname)
+              student.Schedule[block].append(cname)
               availableBlocks.remove(block)
-              student["classes"] += 1
+              student.Classes += 1
               found = True
               break
 
@@ -402,21 +403,21 @@ def generateScheduleV3(
           if len(existsIn) > 0:
             for i, existing in enumerate(existsIn):
               if solution: break
-              classOut = student["schedule"][existing][0]
+              classOut = student.Schedule[existing][0]
               for block in running:
                 if solution: break
                 if block == existing or block not in availableBlocks: continue
                 for cname in running[block]:
                   if cname[:-2] == classOut[:-2] and len(running[block][cname]["students"]) < classCap:
-                    student["classes"] += 1
+                    student.Classes += 1
 
                     # Move to existing class elsewhere
-                    student["schedule"][block].append(cname)
+                    student.Schedule[block].append(cname)
                     running[block][cname]["students"].append(studentData)
 
                     # Overwrite old class
-                    running[existing][student["schedule"][existing][0]]["students"].remove(studentData)
-                    student["schedule"][existing][0] = existingClassNames[i]
+                    running[existing][student.Schedule[existing][0]]["students"].remove(studentData)
+                    student.Schedule[existing][0] = existingClassNames[i]
                     running[existing][existingClassNames[i]]["students"].append(studentData)
 
                     solution = True
@@ -424,7 +425,7 @@ def generateScheduleV3(
 
           if not solution:
             # Try alternate
-            alternates = [alt["CrsNo"] for alt in students[student["studentIndex"]]["remainingAlts"] if alt["CrsNo"] not in flex and alt["CrsNo"] in courseRunInfoCopy]
+            alternates = [alt.CrsNo for alt in students[student.StudentIndex].RemainingAlts if alt.CrsNo not in flex and alt.CrsNo in courseRunInfoCopy]
             if len(alternates) == 0: # If no alternates, create critical error
               c_cr_count += 1
               criticalCount += 1
@@ -435,7 +436,7 @@ def generateScheduleV3(
               })
 
               if not newConflict(
-                student["Pupil #"],
+                student.PupilNum,
                 "", # Student Email
                 "Critical", # Err type
                 "C-CR", # Err code
@@ -453,9 +454,9 @@ def generateScheduleV3(
               runCounts.append(altRunCounts[altIndex])
 
               # Remove alternate from remaining alternates
-              for remaining in students[student["studentIndex"]]["remainingAlts"]:
-                if remaining["CrsNo"] == alternates[altIndex]:
-                  students[student["studentIndex"]]["remainingAlts"].remove(remaining)
+              for remaining in students[student.StudentIndex].RemainingAlts:
+                if remaining.CrsNo == alternates[altIndex]:
+                  students[student.StudentIndex].RemainingAlts.remove(remaining)
 
         # Remove class after inserted or failed to insert
         classes.remove(classes[index])
@@ -466,7 +467,7 @@ def generateScheduleV3(
       if len(missing) > 0:
         data = []
 
-        if student["gradelevel"] is None:
+        if student.Gradelevel is None:
           for obj in missing:
             data["missing"].append({
               "CrsNo": obj["CrsNo"],
@@ -482,7 +483,7 @@ def generateScheduleV3(
               courseInfo = running[obj['block']][cname]
               courseGrade = getGrade(courseInfo['CrsNo'], courseInfo['Description'])
               if courseGrade is None: continue
-              if (student["gradelevel"] == courseGrade) or (student["gradelevel"] == 12 and courseGrade == 11):
+              if (student.Gradelevel == courseGrade) or (student.Gradelevel == 12 and courseGrade == 11):
                 if len(running[obj['block']][cname]["students"]) < classCap:
                   blockSolution["solutions"].append({
                     "CrsNo": cname,
@@ -491,23 +492,23 @@ def generateScheduleV3(
 
             data.append(blockSolution)
 
-        insertConflictSolutions(student["Pupil #"], conflictLogs, data)
+        insertConflictSolutions(student.PupilNum, conflictLogs, data)
 
-    metSelfRequirements = True if student["classes"] == student["expectedClasses"] else False
+    metSelfRequirements = True if student.Classes == student.ExpectedClasses else False
     if not metSelfRequirements:
       
-      if (student["expectedClasses"] - 2) <= student["classes"] < student["expectedClasses"]:
+      if (student.ExpectedClasses - 2) <= student.Classes < student.ExpectedClasses:
         a_mc_count += 1
         acceptableCount += 1
-        if not newConflict(student["Pupil #"], "", "Acceptable", "A-MC", "Missing 1-2 Classses", conflictLogs): studentsAcceptable += 1
+        if not newConflict(student.PupilNum, "", "Acceptable", "A-MC", "Missing 1-2 Classses", conflictLogs): studentsAcceptable += 1
 
-      elif student["classes"] < (student["expectedClasses"] - 2):
+      elif student.Classes < (student.ExpectedClasses - 2):
         # Difference between classes inserted to and
         # expected classes is too great
-        if student["Pupil #"] in conflictLogs:
+        if student.PupilNum in conflictLogs:
           c_mc_count += 1
           criticalCount += 1
-          if not newConflict(student["Pupil #"], "", "Critical", "C-MC", "Missing too many Classses", conflictLogs): studentsCritical += 1
+          if not newConflict(student.PupilNum, "", "Critical", "C-MC", "Missing too many Classses", conflictLogs): studentsCritical += 1
 
   finalConflictLogs = {
     "Conflicts": conflictLogs,
@@ -541,10 +542,10 @@ def generateScheduleV3(
 
   # Insert flex (spare) course codes to empty blocks
   for student in students:
-    for block in student["schedule"]:
-      if len(student["schedule"][block]) == 0:
+    for block in student.Schedule:
+      if len(student.Schedule[block]) == 0:
         i = 0 if int(block[5:]) <= blockPerSem else 1
-        student["schedule"][block].append(flex[i])
+        student.Schedule[block].append(flex[i])
 
   # Read timetable and collect data on courses
   for block in running:
@@ -559,7 +560,7 @@ def generateScheduleV3(
 
   # Update/log new student records
   with open(studentsDir, "w") as outfile:
-    json.dump(students, outfile, indent=2)
+    json.dump(studentsToDict(students), outfile, indent=2)
   
   # Update/log new course records
   with open(coursesDir, "w") as outfile:

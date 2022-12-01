@@ -23,10 +23,10 @@ def extractGrade(string: str) -> int:
   return grade if grade is not None and grade >= 8 else None
 
 # Estimage students grade based off requests
-def estimateStudentGrade(pupil: dict) -> int:
+def estimateStudentGrade(pupil) -> int:
   grades = [] # List of all possible grades
-  for request in (r for r in pupil["requests"] if r not in flex):
-    extractedGrade = getGrade(request["CrsNo"], request["Description"])
+  for request in (r for r in pupil.Requests if r not in flex):
+    extractedGrade = getGrade(request.CrsNo, request.Description)
     if extractedGrade is not None: grades.append(extractedGrade)
 
   return None if len(grades) == 0 else most_frequent(grades) # Final estimate of grade

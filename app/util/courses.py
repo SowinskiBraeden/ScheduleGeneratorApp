@@ -1,7 +1,14 @@
 #!/usr/bin/env python3.11
 import json
 import csv
+from dataclasses import dataclass
 from app.util.estimateGrade import getGrade
+
+@dataclass
+class Request:
+  CrsNo:       str
+  Description: str
+  Alt:         bool
 
 # Get all requested courses from data
 def getCourses(

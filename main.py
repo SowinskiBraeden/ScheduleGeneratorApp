@@ -7,7 +7,7 @@ from app.util.convertRawData import putScheduleToWord, putMasterTimetable
 from app.generator import generateScheduleV3
 from app.util.globals import Error
 from app.util.courses import getCourses, writeCoursesToCSV
-from app.util.students import getStudents, writeStudentsToCSV
+from app.util.students import getStudents, writeStudentsToCSV, Student
 from app.util.errorCalculator import writeErrorsToCSV
 from app.util.validator import validateInputData
 
@@ -58,7 +58,7 @@ def start(
   eel.post_data('Collecting student information...')
   students = getStudents(
     raw_data_dir,
-    log         = True,
+    log         = False,
     totalBlocks = total_blocks,
     log_dir     = './output/raw/json/students.json'
   )
@@ -89,13 +89,13 @@ def start(
 
   # Get updated students
   eel.post_data('Gathering latest data...')
-  with open(f'{raw_json_dir}/students.json', 'r') as studentFile: students = json.load(studentFile)
+  with open(f'{raw_json_dir}/students.json', 'r') as studentFile:
+    # Unpack dictionary to Student dataclass
+    students = [Student(**s) for s in json.load(studentFile)]
+  with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
 
   # call post-algorithm functions to present sorted data
   eel.post_data('Writing data to .csv files...')
-  # get updated raw data
-  with open(f'{raw_json_dir}/students.json', 'r') as sFile: students = json.load(sFile)
-  with open(f'{raw_json_dir}/courses.json', 'r') as cFile: courses = json.load(cFile)
   writeStudentsToCSV(students, output_dir='./output/raw/csv/students.csv')
   writeCoursesToCSV(courses, output_dir='./output/raw/csv/courses.csv')
   writeErrorsToCSV(len(students), conflictsDir='./output/raw/json/conflicts.json', outputDir='./output/raw/csv/error_tracker.csv')
