@@ -73,9 +73,9 @@ def generateScheduleV3(
     return (None, totalBlockError) # return none and signal failure
 
   # First we need to setup some values
-  median = (minReq + classCap) // 2
-  blockPerSem = int(totalBlocks / 2)
-  running = {f'block{i}': {} for i in range(1, totalBlocks + 1)}
+  median:      int             = (minReq + classCap) // 2
+  blockPerSem: int             = int(totalBlocks / 2)
+  running:     dict[str: dict] = {f'block{i}': {} for i in range(1, totalBlocks + 1)}
 
   def equal(l: list) -> list: # Used to equalize list of numbers
     q,r = divmod(sum(l),len(l))
