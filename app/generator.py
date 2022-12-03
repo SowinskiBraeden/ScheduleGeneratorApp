@@ -83,7 +83,7 @@ def generateScheduleV3(
 
 
   # Step 1 - Calculate which classes can run
-  activeCourses = {}
+  activeCourses: dict[str: dict] = {}
   for student in students:
     # Tally class request
     for request in (request for request in student.Requests if not request.Alt and request.CrsNo not in flex):
@@ -95,16 +95,16 @@ def generateScheduleV3(
 
 
   # Step 2 - Generate empty classes
-  allClassRunCounts: list[int]                 = []
-  courseRunInfo:     dict[str: dict[str: any]] = {} # Generated now, used in step 4
-  emptyClasses:      dict[str: dict[str: any]] = {} # List of all classes with how many students should be entered during step 3
+  allClassRunCounts: list[int]       = []
+  courseRunInfo:     dict[str: dict] = {} # Generated now, used in step 4
+  emptyClasses:      dict[str: dict] = {} # List of all classes with how many students should be entered during step 3
   
   # calculate number of times to run class
   for i in range(len(activeCourses)):
-    index = list(activeCourses)[i]
+    index: Course = list(activeCourses)[i]
     if index not in emptyClasses: emptyClasses[index] = {}
-    classRunCount = activeCourses[index].Requests // median
-    remaining = activeCourses[index].Requests % median
+    classRunCount: int = activeCourses[index].Requests // median
+    remaining:     int = activeCourses[index].Requests % median
 
     # Put number of classRunCount classes in emptyClasses
     for j in range(classRunCount):
@@ -185,9 +185,9 @@ def generateScheduleV3(
 
   
   # Step 3 - Fill 'emptyClasses' with Students
-  selectedCourses = {}
-  tempStudents = list(students)
-   
+  selectedCourses: dict[str: dict] = {}
+  tempStudents:    list[Student]   = list(students)
+
   while len(tempStudents) > 0:
     # Choose random student to prevent any success
     # bias to students at the top of the list
@@ -271,21 +271,21 @@ def generateScheduleV3(
       return (None, invalidStepTypeError)
 
   # Create copy for step 6
-  courseRunInfoCopy = dict(courseRunInfo)
+  courseRunInfoCopy: dict[str: dict] = dict(courseRunInfo)
 
   while len(allClassRunCounts) > 0:
     # Get highest resource class (most times run)
-    index = allClassRunCounts.index(max(allClassRunCounts))
-    course = list(courseRunInfo)[index]
+    index:  int = allClassRunCounts.index(max(allClassRunCounts))
+    course: str = list(courseRunInfo)[index]
 
     # Tally first and second semester
-    allSemBlockLens = [len(running[f'block{i}']) for i in range(1, totalBlocks + 1)]
+    allSemBlockLens: list[int] = [len(running[f'block{i}']) for i in range(1, totalBlocks + 1)]
   
     # If there is more than one class Running
     if allClassRunCounts[index] > 1:
-      blockIndex = allSemBlockLens.index(min(allSemBlockLens))
-      stepType = 0 if blockIndex < blockPerSem else 1
-      offset = 0
+      blockIndex: int = allSemBlockLens.index(min(allSemBlockLens))
+      stepType:   int = 0 if blockIndex < blockPerSem else 1
+      offset:     int = 0
 
       # Spread classes throughout both semesters
       for i in range(courseRunInfo[course]["Total"]):
@@ -344,8 +344,8 @@ def generateScheduleV3(
   studentsCritical, studentsAcceptable = 0, 0
 
   for student in students:
-    blocks = [student.Schedule[block] for block in student.Schedule]
-    hasConflicts = True if sum(1 for b in blocks if len(b)>1) > 0 else False
+    blocks:       list[list] = [student.Schedule[block] for block in student.Schedule]
+    hasConflicts: bool       = True if sum(1 for b in blocks if len(b)>1) > 0 else False
     
     # If there is no conflicts
     # and classes inserted to is equal to expectedClasses
@@ -360,14 +360,15 @@ def generateScheduleV3(
       if not newConflict(student.PupilNum, "", "Acceptable", "A-MC", "Missing 1-2 Classses", conflictLogs): studentsAcceptable += 1
       continue
     
-    studentData = {
+    studentData: dict[str: any] = {
       "Pupil #": student.PupilNum,
       "index": student.StudentIndex
     }
 
     if hasConflicts:
-      student.Classes = 0
-      missing = []
+      student.Classes: int = 0
+      missing: list[str] = []
+
       # Clear student schedule to restructure
       for block in student.Schedule:
         [running[block][cname]["students"].remove(studentData) for cname in student.Schedule[block]]
