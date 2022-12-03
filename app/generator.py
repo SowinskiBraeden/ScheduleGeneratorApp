@@ -95,9 +95,10 @@ def generateScheduleV3(
 
 
   # Step 2 - Generate empty classes
-  allClassRunCounts = []
-  courseRunInfo = {} # Generated now, used in step 4
-  emptyClasses = {} # List of all classes with how many students should be entered during step 3
+  allClassRunCounts: list[int]                 = []
+  courseRunInfo:     dict[str: dict[str: any]] = {} # Generated now, used in step 4
+  emptyClasses:      dict[str: dict[str: any]] = {} # List of all classes with how many students should be entered during step 3
+  
   # calculate number of times to run class
   for i in range(len(activeCourses)):
     index = list(activeCourses)[i]
