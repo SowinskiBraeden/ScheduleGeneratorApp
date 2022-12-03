@@ -2,11 +2,21 @@
 import json
 import random
 from string import hexdigits
+from dataclasses import dataclass
 
 from app.util.globals import flex, Error
 from app.util.estimateGrade import getGrade
 from app.util.students import Student, studentsToDict
 from app.util.courses import Course, coursesToDict
+
+@dataclass
+class Conflict:
+  PupilNum: str
+  Email:    str
+  Type:     str
+  Code:     str
+  Conflict: str
+  Missing:  list = None
 
 # Takes in information to create or add a new conflict
 # Returns if the particular student has a previous error
@@ -16,28 +26,28 @@ def newConflict(
   conflictType: str, 
   code:         str, 
   description:  str,
-  logs:         dict
+  logs:         dict[str: list[Conflict]]
 ) -> bool:
   exists = True if pupilNum in logs else False
-  log = {
-    "Pupil #": pupilNum,
-    "Email": email,
-    "Type": conflictType,
-    "Code": code,
-    "Conflict": description
-  }
+  log = Conflict(
+    pupilNum,
+    email,
+    conflictType,
+    code,
+    description
+  )
   if exists: logs[pupilNum].append(log)
   else: logs[pupilNum] = [log]
   return exists if conflictType == "Critical" else False
 
 def insertConflictSolutions(
   pupilNum: str, 
-  logs:     dict, 
-  data:     dict
+  logs:     dict[str: list[Conflict]], 
+  data:     list[dict[str: any]]
 ) -> None:
   for conflict in logs[pupilNum]:
-    if conflict["Type"] == "Critical":
-      conflict["Missing"] = data
+    if conflict.Type == "Critical":
+      conflict.Missing = data
       break
 
 # V3 differs a lot by V1/2 as it does not focus on fitting the classes
@@ -330,7 +340,7 @@ def generateScheduleV3(
 
 
   # Step 6 - Evaluate, move students to fix conflicts
-  conflictLogs = {}
+  conflictLogs: dict[str: list[Conflict]] = {}
   criticalCount, acceptableCount = 0, 0
   c_mc_count, c_cr_count, a_mc_count = 0, 0, 0
   studentsCritical, studentsAcceptable = 0, 0
@@ -463,14 +473,14 @@ def generateScheduleV3(
         classes.remove(classes[index])
         runCounts.remove(runCounts[index])
 
-      # Collect missing course data and solutions
+      # Collect missing course data and 
 
       if len(missing) > 0:
         data = []
 
         if student.Gradelevel is None:
           for obj in missing:
-            data["missing"].append({
+            data.append({
               "CrsNo": obj["CrsNo"],
               "block": obj['block'],
               "solutions": None,
@@ -511,8 +521,8 @@ def generateScheduleV3(
           criticalCount += 1
           if not newConflict(student.PupilNum, "", "Critical", "C-MC", "Missing too many Classses", conflictLogs): studentsCritical += 1
 
-  finalConflictLogs = {
-    "Conflicts": conflictLogs,
+  finalConflictLogs: dict[str: any] = {
+    "Conflicts": {s: [c.__dict__ for c in conflictLogs[s]] for s in conflictLogs},
     "Critical": {
       "Total": criticalCount,
       "Students": studentsCritical,
