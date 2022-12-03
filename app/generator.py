@@ -75,10 +75,7 @@ def generateScheduleV3(
   # First we need to setup some values
   median = (minReq + classCap) // 2
   blockPerSem = int(totalBlocks / 2)
-  running = {}
-  for i in range(1, totalBlocks + 1):
-    running[f'block{i}'] = {}
-
+  running = {f'block{i}': {} for i in range(1, totalBlocks + 1)}
 
   def equal(l: list) -> list: # Used to equalize list of numbers
     q,r = divmod(sum(l),len(l))
