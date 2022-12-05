@@ -15,7 +15,7 @@ class Student:
   Classes:         int
   RemainingAlts:   list[Request]
   StudentIndex:    int
-  Gradelevel:      int = None # set to None since don't pass gradelevel
+  Gradelevel:      int = None # set to None since we don't pass gradelevel
 
   # This function converst Student.Requests to an array of dictionaries from an array of Requests
   def RequestsToDict(self) -> None: self.Requests = [asdict(r) for r in self.Requests]
