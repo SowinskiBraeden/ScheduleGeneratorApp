@@ -15,7 +15,7 @@ class Course:
   CrsNo:       str
   Description: str
   Grade:       int
-  Requests:    int = 0 # number of requests for this
+  Requests:    int = 0 # number of requests for this course
   Sem1:        int = 0 # number of classes running in sem1
   Sem2:        int = 0 # number of classes running in sem2
   Total:       int = 0 # total number of classes running
