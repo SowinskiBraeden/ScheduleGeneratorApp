@@ -64,7 +64,7 @@ def putScheduleToWord(
 	table.columns[1].width = Inches(0.75)
 	table.columns[2].width = Inches(0.75)
 
-	for block in student['schedule']:
+	for block in student.Schedule:
 		courseCode = student.Schedule[block][0]
 		if courseCode in flex: courseName = 'Study'
 		else: courseName = courses[courseCode[:-2]].Description
