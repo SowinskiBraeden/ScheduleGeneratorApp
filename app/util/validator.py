@@ -5,7 +5,7 @@ from app.util.globals import Error
 def validateInputData(inputFileDir: str) -> Error:
   with open(inputFileDir, newline='') as csvfile:
     includes = ['Pupil #', 'CrsNo', 'Description', 'Alternate?']
-    data = csvfile.readline().replace('\n', '').split(',')
+    data = csvfile.readline().replace('\n', '').replace('\r', '').split(',')
     missing = [e for e in includes if e not in data]
     if len(missing) > 0:
       description = 'You are missing the following: '
