@@ -10,7 +10,7 @@ def validateInputData(inputFileDir: str) -> Error:
     if len(missing) > 0:
       description = 'You are missing the following: '
       for i in range(len(missing)):
-        description += f'{missing[i]}, ' if i != len(missing) - 1 else description += f'{missing[i]}'
+        description = description + f'{missing[i]}, ' if i != len(missing) - 1 else description + f'{missing[i]}'
       missingErr = Error('Missing Required Fields', description)
 
       return missingErr
