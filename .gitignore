@@ -1,4 +1,5 @@
 # pycache
+__pycache__
 app/__pycache__/
 app/util/__pycache__/
 
@@ -7,3 +8,8 @@ output/
 
 # test
 *test.py
+
+# Build
+build/
+dist/
+main.spec
