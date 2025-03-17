@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 from app.util.globals import flex
 
 most_frequent = lambda l : max(set(l), key = l.count)

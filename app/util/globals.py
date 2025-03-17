@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 from dataclasses import dataclass
 
 # These are the codes for Flex (spare) blocks

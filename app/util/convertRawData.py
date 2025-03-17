@@ -1,4 +1,4 @@
-#!/usr/bin/env python 3.11
+#!/usr/bin/env python 3
 from docx.shared import Inches
 from app.util.globals import flex
 import xlsxwriter

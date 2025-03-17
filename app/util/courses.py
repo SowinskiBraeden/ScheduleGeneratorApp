@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 import json
 import csv
 from dataclasses import dataclass, asdict
